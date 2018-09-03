@@ -1,55 +1,89 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import './app.css';
 
-import SearchBar from './SearchBar';
 import List from './List';
+import SearchForm from './SearchForm';
 
 
 export default class App extends Component {
-  constructor(props){
-    super(props)
+  constructor(){
+    super()
     this.state = {
       articles:[],
       newData: [],
       error: null,
-    }
+      q: "test",
+      homeLink: "",
+        }
+
   }
 
   componentDidMount() {
     this.setState({isLoading: true,});
-    let url = "https://newsapi.org/v2/top-headlines?country=us&apiKey=9b215697b6e64eee94691526f2a163d3";
-    
 
+    // Build the api call from these parameters
+    let baseUrl = "https://newsapi.org/v2/"
+    let endpoint = "everything?"
+    let q = "q=" + this.state.q
+    let language = "&language=en"
+    let pageSize = "&pageSize=" + 3
+    let apikey = "&apiKey=9b215697b6e64eee94691526f2a163d3"
+    let url = baseUrl + endpoint + q + language + pageSize + apikey;
+
+    // check url in console
+    console.log(url)
 
     axios.get(url)
     // convert data to json and map what we want
     .then(json => json.data.articles.map(res => ({
-      author: `${res.author}`,
-      description: `${res.description}`,
-      id: res.source.id
+      author: res.author,
+      description: res.description,
+      url: res.url,
+      urlToImage: res.urlToImage,
+      sourceName: res.source.name,
+      title: res.title
     })))
     // copy the data into two arrays (original - articles) and mutated
     .then(newData => this.setState({articles: newData, newData: newData}))
+    // catch any errors
     .catch(error => this.setState({error}))
       
   }
 
-  filterNames(e){
-    this.state.articles.filter(article => 
-      article.id.toLowerCase().includes(e.target.value.toLowerCase()))
-  }
+ onGreet(){
+   alert("hello");
+ }
 
- 
+ onChangeLinkName(newName){
+    this.setState({
+      q: newName,
+    })
+ }
 
   render() {
-    const { newData, isLoading} = this.state;
-
+    const { newData} = this.state;
+    
     return (
-      <div className="Card">
-        <div className="header">Article List</div>
-        <SearchBar searchFunc={(e)=> this.filterNames(e)}/>
-        <List articles={newData}/>
+      <div className="container">
+
+        <div className="row justify-content-md-center">
+          <div className="col">
+          <span>in parent: {this.state.q}</span>
+           
+            <SearchForm 
+            greet={this.onGreet}
+            changeLink={this.onChangeLinkName.bind(this)}
+            />
+          
+          </div>
+        </div>
+
+        <div className="row justify-content-md-center">
+          <div className="col-md-auto">
+          <List articles={newData}/>
+          </div>
+        </div>
+
       </div>
     )
   }
